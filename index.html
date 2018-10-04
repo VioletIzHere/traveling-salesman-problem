@@ -1,0 +1,220 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,900" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    <style>
+        html, body { padding: 0; margin: 0; background-color: #FFF9FE; }
+        * { margin: 0; font-family: "Lato", sans-serif; }
+        canvas { padding: 0; margin-left: auto; margin-right: auto; display: block; }
+        canvas:hover { cursor: crosshair; }
+        #title {
+            margin-left: 20px; margin-right: 20px; display: block;
+            padding: 30px;
+        } #title p {
+            margin-top: 15px;
+        } #title h1 {
+            margin-bottom: 10px;
+        } #control-panel {
+            margin-left: 20px; margin-right: 20px; display: block;
+            padding-left: 30px; padding-bottom: 30px;
+            margin-top: 20px;
+        } .button {
+            color: white;
+            background-color: #EF233C;
+            padding: 10px 20px 13px 20px;
+            border-radius: 50px;
+            display: inline-block;
+            transition: .3s ease;
+        } .button:hover {
+            cursor: pointer;
+            transform: scale(1.2, 1.2);
+            box-shadow: 0px 0px 20px 2px #EF233C;
+        } .one:hover { box-shadow: 0px 0px 20px 2px #3772FF; }
+        .two:hover { box-shadow: 0px 0px 20px 2px #0CCE6B; }
+        .three:hover { box-shadow: 0px 0px 20px 2px #FF823A; }
+        .four:hover { box-shadow: 0px 0px 20px 2px #DE6C83; }
+        .five { color: black; border-radius: 5px; background-color: white; border: 2px solid black; margin-left: 40px; }
+        .five:hover { box-shadow: 0px 0px 20px 2px black; color: white; background-color: black; }
+        #console {
+            margin-left: 50px; margin-right: 50px; display: block;
+            margin-bottom: 30px;
+            padding: 20px;
+            border-left: 10px solid #0A014F;
+            background: #FFEAFE;
+            transition: 0.3s ease;
+        } #console:hover {
+            transform: scale(1.05, 1.05);
+            box-shadow: 0px 0px 20px #0A014F;
+            cursor: text;
+        }
+        body { margin-bottom: 50px; }
+        @media only screen and (max-width: 1200px) {
+            #control-panel pre {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- This div tag represents the content above the canvas element -->
+    <div id="content-above">
+        <div id="title">
+            <h1>Traveling Salesman Problem Simulator</h1>
+            <p><strong>What is it?</strong> The Traveling Salesman Problem simply asks for the solution to this dilemma: If a salesman had to start from one city and get to another city while visiting all the other cities between them only once, what is the shortest path the salesman could take?</p>
+            <p><strong>Why is it important?</strong> The Traveling Salesman Problem has many applications in the fields of Biology, Electrical Engineering, Computer Science, Mathematics, and even Economics. Solving this problem can reveal algorithmic techniques that can be utilized in other places, as well.</p>
+            <p><strong>What does this simulation show?</strong> In this simulation, each circle will represent a city. The green circle will represent the starting city, and the red circle will represent the ending city. The rest of the circles will be white and will serve as intermediary cities. The solution will be found as the shortest path which starts at the green circle and goes through each white circle only once, eventually ending at the red circle.</p>
+            <p><strong>Instructions:</strong> To get started using this simulation, first decide how many cities you would like to work with (including the starting and ending cities). Enter this number in the input box in the "Create Points" button, and click on it. This will generate a random assortment of circles which will represent cities. If you ever decide to restart your simulation, click on the "Restart" button.</p>
+            <p style="margin-top: 0;">Once you've created your points, click on any one of the three buttons with the following text: "Iterative Solution", "Recursion Solution", or "Tail Recursion Solution". Each of these buttons will trigger the execution of the given algorithm, which will solve for the shortest distance to visit all of the generated points, starting with the green point and ending at the red point. The amount of time taken to execute the algorithm will be presented in the console, which you can enter in your datasheet. Use the "Take Snapshot" button to download an image of the current canvas to your Downloads folder.</p>
+        </div>
+        <div id="console">
+            <h3 style="display: inline-block;">Console</h3>
+            <pre style="display: inline-block;">     <input type="checkbox" name="rpi" value="rpi"> <span style="font-size: 13px;">Retain Previous Outputs</span><br></pre>
+            <p style="font-size: 13px;">All timing data and other information can be viewed here.</p>
+            <br>
+            <pre id="console-text" style="font-size: 15px;">Currently Empty</pre>
+        </div>
+        <div id="control-panel">
+            <p style="margin-left: 10px;"><strong>Note:</strong> When using the "Create Points" button, click on the text, specifically, for it to work.</p>
+            <br>
+            <pre class="button zero"><span>Create   </span><input type="text" size="2" placeholder="10" value="10" id="only-input"><span>   Points</span></pre>
+            <pre class="button one" style="background-color: #3772FF; margin-left: 20px;">Restart</pre>
+            <pre class="button two" style="background-color: #0CCE6B; margin-left: 20px;">Iteration Solution</pre>
+            <pre class="button three" style="background-color: #FF823A; margin-left: 20px;">Recursion Solution</pre>
+            <pre class="button four" style="background-color: #DE6C83; margin-left: 20px;">Tail Recursion Solution</pre>
+            <pre class="button five">Take Snapshot</pre>
+        </div>
+    </div>
+</body>
+<script>
+    // Global Variables
+
+    var content_above = $("#content-above").height();
+    var all_points = [];
+
+    // Global Functions
+
+    var random_number = function(limit) {
+        return Math.floor(Math.random() * limit)
+    }
+
+    var create_points = function(number) {
+        for (var i = 0; i < number; i++) {
+            var x = random_number(width - 100) + 50;
+            var y = random_number(height - 100) + 50;
+            for (var v = 0; v < all_points.length; v++) {
+                try {
+                    while (x == all_points[v][0] && y == all_points[v][1]) {
+                        x = random_number(width);
+                        y = random_number(height);
+                    }
+                } catch (error) {
+                    continue
+                }
+            } if (i == 0) {
+                all_points.push([x, y, 0]);
+            } else if (i == number - 1) {
+                all_points.push([x, y, 1])
+            } else {
+                all_points.push([x, y, 2]);
+            }
+        }
+    }
+
+    var draw_points = function() {
+        strokeWeight(0);
+        for (var i = 0; i < all_points.length; i++) {
+            if (all_points[i][2] == 0) {
+                fill(color("#2DD881"));
+                ellipse(all_points[i][0], all_points[i][1], 30, 30);
+            } else if (all_points[i][2] == 1) {
+                fill(color("#EF233C"));
+                ellipse(all_points[i][0], all_points[i][1], 30, 30);
+            } else {
+                fill(color("#EDF2F4"));
+                ellipse(all_points[i][0], all_points[i][1], 30, 30);
+            }
+        }
+    }
+
+    var delete_points = function() { all_points = []; }
+
+    var draw_lines = function() {
+        for (var i = 0; i < all_points.length; i++) {
+            for (var x = 0; x < all_points.length; x++) {
+                if (all_points[i][0] != all_points[x][0] && all_points[i][1] != all_points[x][1]) {
+                    stroke(color("#EDF2F4"));
+                    strokeWeight(1);
+                    line(all_points[i][0], all_points[i][1], all_points[x][0], all_points[x][1]);
+                }
+            }
+        }
+    }
+
+    // Algorithm Functions
+
+    var iterative_test_solution = function() {
+        var path = [];
+        for (var i = 0; i < all_points.length - 1; i++) {
+            stroke(color("#3772FF"));
+            strokeWeight(2);
+            line(all_points[i][0], all_points[i][1], all_points[i+1][0], all_points[i+1][1]);
+        }
+    }
+
+    // Setup Function
+
+    var setup = function() {
+        createCanvas(document.body.clientWidth - 40, document.body.clientHeight - 100, );
+        background(color("#2D232E"));
+    }
+
+    // Looping/Frame-by-frame Function
+
+    var draw = function() {
+
+    }
+
+    // DOM Receiver Functions
+
+    $(".zero input").click(function(e) {
+        e.stopPropagation();
+    });
+
+    $(".zero").click(function(e) {
+        var dotCount = Number($("#only-input").val());
+        if (!(dotCount > 0) || isNaN(dotCount)) {
+            alert("Please enter a valid integer number.")
+        } else {
+            create_points(dotCount);
+            draw_lines();
+            draw_points();
+        }
+    });
+
+    $(".one").click(function(e) {
+        delete_points();
+        background(color("#2D232E"));
+    });
+
+    $(".two").click(function(e) {
+        background(color("#2D232E"));
+        iterative_test_solution();
+        draw_points();
+        for (var x = 0; x < all_points.length; x++) {
+            fill(0);
+            textAlign(CENTER, CENTER);
+            var y = x + 1;
+            text(y.toString(), all_points[x][0], all_points[x][1]);
+        }
+    });
+
+    $(".five").click(function(e) {
+        saveCanvas("traveling-salesman-problem-canvas", "jpg");
+    });
+
+</script>
+</html>
