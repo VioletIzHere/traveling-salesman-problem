@@ -7,7 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
     <style>
-        html, body { padding: 0; margin: 0; background-color: #FFF9FE; }
+        html, body { padding: 0; margin: 0; background-color: #FFFDFD; }
         * { margin: 0; font-family: "Lato", sans-serif; }
         canvas { padding: 0; margin-left: auto; margin-right: auto; display: block; }
         canvas:hover { cursor: crosshair; }
@@ -36,7 +36,6 @@
         } .one:hover { box-shadow: 0px 0px 20px 2px #3772FF; }
         .two:hover { box-shadow: 0px 0px 20px 2px #0CCE6B; }
         .three:hover { box-shadow: 0px 0px 20px 2px #FF823A; }
-        .four:hover { box-shadow: 0px 0px 20px 2px #DE6C83; }
         .five { color: black; border-radius: 5px; background-color: white; border: 2px solid black; margin-left: 40px; }
         .five:hover { box-shadow: 0px 0px 20px 2px black; color: white; background-color: black; }
         #console {
@@ -55,6 +54,7 @@
         @media only screen and (max-width: 1200px) {
             #control-panel pre {
                 margin-bottom: 20px;
+                cursor:inherit;
             }
         }
     </style>
@@ -64,15 +64,17 @@
     <div id="content-above">
         <div id="title">
             <h1>Traveling Salesman Problem Simulator</h1>
+            <p><strong>Created By:</strong> Paarth Tara</p>
+            <br><hr>
             <p><strong>What is it?</strong> The Traveling Salesman Problem simply asks for the solution to this dilemma: If a salesman had to start from one city and get to another city while visiting all the other cities between them only once, what is the shortest path the salesman could take?</p>
             <p><strong>Why is it important?</strong> The Traveling Salesman Problem has many applications in the fields of Biology, Electrical Engineering, Computer Science, Mathematics, and even Economics. Solving this problem can reveal algorithmic techniques that can be utilized in other places, as well.</p>
             <p><strong>What does this simulation show?</strong> In this simulation, each circle will represent a city. The green circle will represent the starting city, and the red circle will represent the ending city. The rest of the circles will be white and will serve as intermediary cities. The solution will be found as the shortest path which starts at the green circle and goes through each white circle only once, eventually ending at the red circle.</p>
             <p><strong>Instructions:</strong> To get started using this simulation, first decide how many cities you would like to work with (including the starting and ending cities). Enter this number in the input box in the "Create Points" button, and click on it. This will generate a random assortment of circles which will represent cities. If you ever decide to restart your simulation, click on the "Restart" button.</p>
-            <p style="margin-top: 0;">Once you've created your points, click on any one of the three buttons with the following text: "Iterative Solution", "Recursion Solution", or "Tail Recursion Solution". Each of these buttons will trigger the execution of the given algorithm, which will solve for the shortest distance to visit all of the generated points, starting with the green point and ending at the red point. The amount of time taken to execute the algorithm will be presented in the console, which you can enter in your datasheet. Use the "Take Snapshot" button to download an image of the current canvas to your Downloads folder.</p>
+            <p style="margin-top: 0;">Once you've created your points, click on any one of the two buttons with the following text: "Iterative Solution" or "Recursion Solution". Each of these buttons will trigger the execution of the given algorithm, which will solve for the shortest distance to visit all of the generated points, starting with the green point and ending at the red point. The amount of time taken to execute the algorithm will be presented in the console, which you can enter in your datasheet. Use the "Take Snapshot" button to download an image of the current canvas to your "Downloads" folder.</p>
         </div>
         <div id="console">
             <h3 style="display: inline-block;">Console</h3>
-            <pre style="display: inline-block;">     <input type="checkbox" name="rpi" value="rpi"> <span style="font-size: 13px;">Retain Previous Outputs</span><br></pre>
+            <pre style="display: inline-block;">     <input type="checkbox" name="rpi" value="rpi" id="rpi"> <span style="font-size: 13px;">Retain Previous Outputs</span><br></pre>
             <p style="font-size: 13px;">All timing data and other information can be viewed here.</p>
             <br>
             <pre id="console-text" style="font-size: 15px;">Currently Empty</pre>
@@ -84,7 +86,6 @@
             <pre class="button one" style="background-color: #3772FF; margin-left: 20px;">Restart</pre>
             <pre class="button two" style="background-color: #0CCE6B; margin-left: 20px;">Iteration Solution</pre>
             <pre class="button three" style="background-color: #FF823A; margin-left: 20px;">Recursion Solution</pre>
-            <pre class="button four" style="background-color: #DE6C83; margin-left: 20px;">Tail Recursion Solution</pre>
             <pre class="button five">Take Snapshot</pre>
         </div>
     </div>
@@ -156,19 +157,126 @@
 
     // Algorithm Functions
 
-    var iterative_test_solution = function() {
-        var path = [];
-        for (var i = 0; i < all_points.length - 1; i++) {
-            stroke(color("#3772FF"));
-            strokeWeight(2);
-            line(all_points[i][0], all_points[i][1], all_points[i+1][0], all_points[i+1][1]);
+        // Global Entities
+
+        let Node = class {
+            constructor (x, y) {
+                this.x = x;
+                this.y = y;
+            }
         }
-    }
+
+        var distance_between_points = function(nemo) {
+            var total_distance = 0.0;
+            for (var i = 0; i < nemo.length - 1; i++) {
+                total_distance += Math.sqrt(Math.pow((nemo[i + 1].y - 
+                nemo[i].y), 2) + Math.pow((nemo[i + 1].x - nemo[i].x), 2));
+            } return total_distance;
+        }
+
+        // Global Entities
+
+        // Recursion Solution
+
+        var recursive_permutations = function(array) {
+            if (!(array.length > 1))
+                return array
+            else
+                var all_permutations = [];
+                for (var i = 0; i < array.length; i++) {
+                    var current_element = [array[i]]; var other_elements;
+                    if (i == 0) other_elements = array.slice(1);
+                    else other_elements = (array.slice(0, i)).concat(array.slice(i + 1));
+                    var other_elements_permutations = recursive_permutations(other_elements);
+                    for (var x = 0; x < other_elements_permutations.length; x++) {
+                        var p = other_elements_permutations[x];
+                        if (typeof p != typeof []) p = [p];
+                        all_permutations.push(current_element.concat(p));
+                    }
+                } return all_permutations
+        }
+
+        var recursive_solution = function(callback) {
+            var t0 = performance.now();
+            var all_paths = [];
+            for (var i = 1; i < all_points.length - 1; i++) {
+                all_paths.push(new Node(all_points[i][0], all_points[i][1]));
+            } all_paths = recursive_permutations(all_paths);
+            for (var i = 0; i < all_paths.length; i++) {
+                all_paths[i].push(new Node(all_points[all_points.length - 1][0], all_points[all_points.length - 1][1]));
+                all_paths[i].unshift(new Node(all_points[0][0], all_points[0][1]));
+            } var optimal_path = all_paths[0]; var optimal_path_distance = distance_between_points(all_paths[0]);
+            for (var i = 1; i < all_paths.length; i++) {
+                var current_path_distance = distance_between_points(all_paths[i]);
+                if (current_path_distance < optimal_path_distance) {
+                    optimal_path = all_paths[i];
+                    optimal_path_distance = current_path_distance;
+                }
+            } var t1 = performance.now();
+            callback(optimal_path, t1 - t0);
+        }
+
+        // Recursion Solution
+
+        // Iteration Solution
+
+        var range = function(val) {
+            var returnable = [];
+            for (var i = 0; i < val; i++) returnable.push(i);
+            return returnable;
+        }
+
+        var iterative_solution = function(array) {
+            var results = [array.pop()];
+            while (array.length != 0) {
+                var c = array.pop();
+                var new_results = [];
+                for (var w of results) {
+                    if (typeof w == typeof 1) w = [w];
+                    var q = range(w.length + 1);
+                    for (var i of q) {
+                        var appendable = w.slice(0, i);
+                        appendable.push(c);
+                        appendable = appendable.concat(w.slice(i));
+                        new_results.push(appendable);
+                    }
+                } results = new_results;
+            } return results;
+        }
+
+        var iterative_solution_actual = function(callback) {
+            t0 = performance.now();
+            var object = {}; var permutations_of_keys = [];
+            for (var i = 1; i < all_points.length - 1; i++) {
+                permutations_of_keys.push(i);
+                object[i.toString()] = new Node(all_points[i][0], all_points[i][1]);
+            } permutations_of_keys = iterative_solution(permutations_of_keys);
+            var answer = [];
+            for (var i = 0; i < permutations_of_keys.length; i++) {
+                var current_array = permutations_of_keys[i];
+                var new_array = [];
+                for (var x = 0; x < current_array.length; x++) {
+                    new_array.push(object[current_array[x].toString()]);
+                } answer.push(new_array);
+            } for (var i = 0; i < answer.length; i++) {
+                answer[i].push(new Node(all_points[all_points.length - 1][0], all_points[all_points.length - 1][1]));
+                answer[i].unshift(new Node(all_points[0][0], all_points[0][1]));
+            } var optimal_path = answer[0]; var optimal_path_distance = distance_between_points(answer[0]);
+            for (var i = 1; i < answer.length; i++) {
+                var current_path_distance = distance_between_points(answer[i]);
+                if (current_path_distance < optimal_path_distance) {
+                    optimal_path = answer[i];
+                    optimal_path_distance = current_path_distance;
+                }
+            } t1 = performance.now(); callback(optimal_path, t1 - t0);
+        }
+
+        // Iteration Solution
 
     // Setup Function
 
     var setup = function() {
-        createCanvas(document.body.clientWidth - 40, document.body.clientHeight - 100, );
+        createCanvas(document.body.clientWidth - 40, document.body.clientHeight - 100);
         background(color("#2D232E"));
     }
 
@@ -186,8 +294,8 @@
 
     $(".zero").click(function(e) {
         var dotCount = Number($("#only-input").val());
-        if (!(dotCount > 0) || isNaN(dotCount)) {
-            alert("Please enter a valid integer number.")
+        if (!(dotCount > 3) || isNaN(dotCount)) {
+            alert("Please enter a valid integer number greater than 3.")
         } else {
             create_points(dotCount);
             draw_lines();
@@ -201,15 +309,46 @@
     });
 
     $(".two").click(function(e) {
-        background(color("#2D232E"));
-        iterative_test_solution();
-        draw_points();
-        for (var x = 0; x < all_points.length; x++) {
-            fill(0);
-            textAlign(CENTER, CENTER);
-            var y = x + 1;
-            text(y.toString(), all_points[x][0], all_points[x][1]);
-        }
+        document.body.style.cursor = "progress";
+        iterative_solution_actual(function(optimal_path, time_taken) {
+            document.body.style.cursor = "inherit";
+            for (var i = 0; i < optimal_path.length - 1; i++) {
+                stroke(color("#2B5CFF"));
+                strokeWeight(5);
+                line(optimal_path[i].x, optimal_path[i].y, optimal_path[i + 1].x, optimal_path[i + 1].y);
+                draw_points();
+            } for (var i = 0; i < optimal_path.length; i++) {
+                fill(0);
+                textAlign(CENTER, CENTER);
+                text(String(i + 1), optimal_path[i].x, optimal_path[i].y);
+            }
+
+            if (!$("#rpi").is(":checked"))
+                $("#console-text").html("Quantity of Cities: " + String(all_points.length) + "<br>Execution Time: " + String(Math.round(time_taken * 100) / 100) + " milliseconds");
+            else
+                $("#console-text").html($("#console-text").html() + "<br><br>Quantity of Cities: " + String(all_points.length) + "<br>Execution Time: " + String(Math.round(time_taken * 100) / 100) + " milliseconds");
+        });
+    });
+
+    $(".three").click(function(e) {
+        document.body.style.cursor = "progress";
+        recursive_solution(function(optimal_path, time_taken) {
+            document.body.style.cursor = "inherit";
+            for (var i = 0; i < optimal_path.length - 1; i++) {
+                stroke(color("#2B5CFF"));
+                strokeWeight(5);
+                line(optimal_path[i].x, optimal_path[i].y, optimal_path[i + 1].x, optimal_path[i + 1].y);
+                draw_points();
+            } for (var i = 0; i < optimal_path.length; i++) {
+                fill(0);
+                textAlign(CENTER, CENTER);
+                text(String(i + 1), optimal_path[i].x, optimal_path[i].y);
+            }
+            if (!$("#rpi").is(":checked"))
+                $("#console-text").html("Quantity of Cities: " + String(all_points.length) + "<br>Execution Time: " + String(Math.round(time_taken * 100) / 100) + " milliseconds");
+            else
+                $("#console-text").html($("#console-text").html() + "<br><br>Quantity of Cities: " + String(all_points.length) + "<br>Execution Time: " + String(Math.round(time_taken * 100) / 100) + " milliseconds");
+        });
     });
 
     $(".five").click(function(e) {
